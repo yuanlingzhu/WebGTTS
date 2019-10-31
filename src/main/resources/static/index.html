@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+		<link href="3dr/iview/dist/styles/iview.css" rel="stylesheet"/>
+		<!-- <script type="text/javascript" src="http://api.map.baidu.com/api?key=&v=1.1&services=true"></script> -->
+		<!-- <script type="text/javascript" src="http://api.map.baidu.com/api?key=&v=2.0&ak=ed5GFs7Qr5VV9S58Qun3hH1lY4DEz9sa&services=true"></script> -->
+		<!-- <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=Fh9X4hT3ygcBMZnlPbRlMG508r0OCqsk"></script> -->
+
+		<!-- HTML5 shim 和 Respond.js 是为了让 IE8 支持 HTML5 元素和媒体查询（media queries）功能 -->
+		<!-- 警告：通过 file:// 协议（就是直接将 html 页面拖拽到浏览器中）访问页面时 Respond.js 不起作用 -->
+		<!--[if lt IE 9]>
+				<script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+				<script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>		
+			<![endif]-->
+			
+		
+	</head>
+	
+	<body>
+		<div id="app">
+			<Row :gutter="32" type="flex" justify="center" style="margin-top:30px;">
+				<i-col span="8">
+						<i-input search enter-button placeholder="Enter something..." @on-search="searchRoadInf" />
+				</i-col>
+				<i-col span="2">
+					<a href="backgroundImg.html"><i-button type="default" shape="circle" icon="md-add">添加图片</i-button></a>
+				</i-col>
+			</Row>
+			<Row  type="flex" justify="center" style="margin-top:20px;">
+				<i-col span="22">
+					<i-table  :columns="columns" :data="roadImgInf" border>
+				
+						<template slot-scope="{ row, index }" slot="action">
+							<i-button type="primary" size="small" style="margin-right: 5px" @click="roadInf(index)">路段信息</i-button>
+							<i-button type="primary" size="small" style="margin-right: 5px" @click="updataImg(index)">修改图片</i-button>
+							<i-button type="error" size="small" @click="showModel(index)">删除</i-button>
+						</template>
+
+					</i-table> 
+					<Modal v-model="delmodal" width="360">
+						<p slot="header" style="color:#f60;text-align:center">
+							<Icon type="ios-information-circle"></Icon>
+							<span>删除确认</span>
+						</p>
+						<div style="text-align:center">
+							<p>你即将永久删除,{{LEDNumber}} 屏下的所有信息！</p>
+						</div>
+						<div slot="footer">
+							<i-button type="error" size="large" long :loading="modal_loading" @click="del">删除</i-button>
+						</div>
+					</Modal>
+				</i-col>
+			
+			</Row>
+			
+		</div>
+		
+
+		<script type="text/javascript" src="3dr/jquery-3.4.1.min.js"></script>
+		<script type="text/javascript" src="3dr/vue.min.js"></script>
+		<script type="text/javascript" src="3dr/iview/dist/iview.min.js"></script>
+		<script type="text/javascript" src="3dr/viewer.min.js"></script>
+		<script type="text/javascript" src="js/index.js"></script>
+	
+	</body>
+</html>

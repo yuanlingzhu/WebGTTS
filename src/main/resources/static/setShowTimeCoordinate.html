@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+		<link href="3dr/iview/dist/styles/iview.css" rel="stylesheet"/>
+		<!-- <script type="text/javascript" src="http://api.map.baidu.com/api?key=&v=1.1&services=true"></script> -->
+		<!-- <script type="text/javascript" src="http://api.map.baidu.com/api?key=&v=2.0&ak=ed5GFs7Qr5VV9S58Qun3hH1lY4DEz9sa&services=true"></script> -->
+		<!-- <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=Fh9X4hT3ygcBMZnlPbRlMG508r0OCqsk"></script> -->
+
+		<!-- HTML5 shim 和 Respond.js 是为了让 IE8 支持 HTML5 元素和媒体查询（media queries）功能 -->
+		<!-- 警告：通过 file:// 协议（就是直接将 html 页面拖拽到浏览器中）访问页面时 Respond.js 不起作用 -->
+		<!--[if lt IE 9]>
+				<script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+				<script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>		
+			<![endif]-->
+			
+		<style>
+			.demo-drawer-footer{
+				width: 100%;
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				border-top: 1px solid #e8e8e8;
+				padding: 10px 16px;
+				text-align: right;
+				background: #fff;
+				text-align: center;
+			}
+			.t-c{text-align:center;}
+			.i-c{width: 150px; height: 35px;background-color: whitesmoke;border-radius: 16px;}
+		</style>
+	</head>
+	
+	<body>
+		
+		<div id="app">
+
+			<Row :gutter="10" style="margin-top: 10px; margin-left: 10px;">
+				<i-col span="2">
+					<a href="index.html"> <i-button long :size="large" type="default" icon="md-home"></i-button></a>
+				</i-col>
+				<i-col span="2" >
+						<i-button long :size="large" type="default" icon="md-return-left" @click="returnRoadInfEdit"></i-button>
+				</i-col>
+			</Row>
+		
+
+			<Row type="flex" align="middle"> 
+			
+				<i-col span="23" style="margin-top: 50px" offset="1">	
+					<Row :gutter="15">
+						<i-col span="4">
+							<i-input v-model="pwidth" placeholder="输入屏体宽" clearable  ></i-input>
+						</i-col>
+						<i-col span="4">
+							<i-input v-model="pheight" placeholder="输入屏体高" clearable ></i-input>
+						</i-col>
+						<i-col span="4">
+							<i-input v-model="laberx" >
+								<span slot="prepend">x：</span>
+							</i-input>
+						</i-col>
+						<i-col span="4">
+							<i-input v-model="labery">
+								<span slot="prepend">y：</span>
+							</i-input>
+						</i-col>
+						<i-col span="2">
+							<i-button long  type="primary" @click="submitParameter">提交</i-button>
+						</i-col>
+					</Row>	
+				</i-col>
+		
+				<i-col span="23" offset="1">
+					<div :style="'width:'+ pwidth+'px;height:'+ pheight+'px;margin-top:50PX;' " >
+						<canvas id="canvas" :width="pwidth" :height="pheight" ref="canvas" style="border: 1px solid;"></canvas>
+					</div>
+				</i-col>
+
+			</Row>
+		</div>
+		
+
+		<script type="text/javascript" src="3dr/jquery-3.4.1.min.js"></script>
+		<script type="text/javascript" src="3dr/vue.min.js"></script>
+		<script type="text/javascript" src="3dr/iview/dist/iview.min.js"></script>
+		<script type="text/javascript" src="3dr/jcanvas.min.js"></script>
+		<script type="text/javascript" src="js/setShowTimeCoordinate.js"></script>
+
+		
+	</body>
+</html>

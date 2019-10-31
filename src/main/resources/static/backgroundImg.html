@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+		<link href="3dr/iview/dist/styles/iview.css" rel="stylesheet"/>
+		<!-- <script type="text/javascript" src="http://api.map.baidu.com/api?key=&v=1.1&services=true"></script> -->
+		<!-- <script type="text/javascript" src="http://api.map.baidu.com/api?key=&v=2.0&ak=ed5GFs7Qr5VV9S58Qun3hH1lY4DEz9sa&services=true"></script> -->
+		<!-- <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=Fh9X4hT3ygcBMZnlPbRlMG508r0OCqsk"></script> -->
+
+		<!-- HTML5 shim 和 Respond.js 是为了让 IE8 支持 HTML5 元素和媒体查询（media queries）功能 -->
+		<!-- 警告：通过 file:// 协议（就是直接将 html 页面拖拽到浏览器中）访问页面时 Respond.js 不起作用 -->
+		<!--[if lt IE 9]>
+				<script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+				<script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>		
+			<![endif]-->
+			
+		<style>
+			.demo-drawer-footer{
+				width: 100%;
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				border-top: 1px solid #e8e8e8;
+				padding: 10px 16px;
+				text-align: right;
+				background: #fff;
+				text-align: center;
+			}
+			
+		</style>
+	</head>
+	
+	<body>
+		
+		<div id="app">
+			<Row  style="margin-top: 10px; margin-left: 10px;">
+				<i-col span="2">
+					<a href="index.html"> <i-button long :size="large" type="default" icon="md-home" style="font-size: 18px;"></i-button></a>
+				</i-col>
+			</Row>
+				
+			<Row type="flex" align="middle"> 
+				<i-col span="5"  offset="1" >
+					<Row>
+						<i-col span="24">
+							<upload  accept="image/*"
+									:format="['bmp','jpg','png','tif','gif','pcx','tga','exif','fpx','svg','psd','cdr','pcd','dxf','ufo','eps','ai','raw','WMF','webp']"
+									:before-upload="handleUpload">
+								<i-button  shape="circle" icon="ios-cloud-upload-outline">上传背景图片</i-button>
+							</upload>	
+						</i-col>
+						<i-col span="24" style="margin-top: 4%">
+							<i-button type="default" shape="circle" icon="ios-create-outline"  @click="paraDrawer = true">参数</i-button>
+							<Drawer title="参数信息" v-model="paraDrawer" width="600" :styles="styles" draggable >
+								<Row >
+									<i-col span="24" style="margin-top: 10px">
+										<Row :gutter="32" v-show="insertLEDNo">
+											<i-col span="15" offset="1"  >
+												<i-form ref="formValidate" :rules="ruleValidate" :label-width="100">
+													<form-item label="输入编号：" prop="ledNo">
+														<i-input v-model="ledNo"  placeholder="输入信号卡编号" ></i-input> 
+													</form-item>
+												</i-form>
+											</i-col>
+											<i-col span="1" v-show="successIcon"><Icon type="ios-checkmark-circle-outline" style="margin-left: -20px; font-size: 18px; margin-top: 7px; color: rgb(26, 219, 26);" /></i-col>
+										</Row>
+										<Row :gutter="32" v-show="updataLEDNo">
+											<i-col span="15" offset="1"  >
+												<i-form :label-width="100">
+													<form-item label="输入编号：" >
+														<i-input v-model="ledNo2"  placeholder=""  disabled></i-input> 
+													</form-item>
+												</i-form>
+											</i-col>
+										</Row>
+									</i-col>
+								</Row>
+								<Row :gutter="32" style="margin-top: 20px">
+									<i-col span="24">
+										<h3>设置像素：</h3>	
+									</i-col>
+									<i-col span="24" style="margin-top: 10px">
+										<Row :gutter="32">
+											<i-col span="8" offset="1"  >
+												<i-input v-model="PixelWidth" type="number"  placeholder="" >
+													<span slot="prepend">宽：</span>
+												</i-input>
+											</i-col>
+											<i-col span="8">
+												<i-input v-model="PixelHeight" type="number"  placeholder="" >
+													<span slot="prepend">高：</span>
+												</i-input>
+											</i-col>
+										</Row>
+									</i-col>
+								</Row>
+								
+								<div class="demo-drawer-footer">
+									<i-button style="margin-right: 8px" @click="paraDrawer = false">Cancel</i-button>
+									<i-button type="primary" @click="submitParameter">Submit</i-button>
+								</div>
+							</Drawer> 
+						</i-col>
+
+					</Row>
+				</i-col>
+				<i-col span="18">
+					<div :style="'width:'+ PixelWidth*10+'px;height:'+ PixelHeight*10+'px;margin-top:10%;' " >
+						<canvas id="canvas" :width="PixelWidth*10" :height="PixelHeight*10" ref="canvas" style="border: 1px solid;"></canvas>
+						<img ref="canvas2" :width="PixelWidth" :height="PixelHeight"  hidden/>
+					</div>
+				</i-col>
+			</Row>
+		</div>
+		
+
+		<script type="text/javascript" src="3dr/jquery-3.4.1.min.js"></script>
+		<script type="text/javascript" src="3dr/vue.min.js"></script>
+		<script type="text/javascript" src="3dr/iview/dist/iview.min.js"></script>
+		<script type="text/javascript" src="3dr/jcanvas.min.js"></script>
+		<script type="text/javascript" src="js/backgroundImg.js"></script>
+	
+	</body>
+</html>

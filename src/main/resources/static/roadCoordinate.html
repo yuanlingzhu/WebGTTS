@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+		<link href="3dr/iview/dist/styles/iview.css" rel="stylesheet"/>
+		<!-- <script type="text/javascript" src="http://api.map.baidu.com/api?key=&v=1.1&services=true"></script> -->
+		<!-- <script type="text/javascript" src="http://api.map.baidu.com/api?key=&v=2.0&ak=ed5GFs7Qr5VV9S58Qun3hH1lY4DEz9sa&services=true"></script> -->
+		<!-- <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=Fh9X4hT3ygcBMZnlPbRlMG508r0OCqsk"></script> -->
+
+		<!-- HTML5 shim 和 Respond.js 是为了让 IE8 支持 HTML5 元素和媒体查询（media queries）功能 -->
+		<!-- 警告：通过 file:// 协议（就是直接将 html 页面拖拽到浏览器中）访问页面时 Respond.js 不起作用 -->
+		<!--[if lt IE 9]>
+				<script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+				<script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>		
+			<![endif]-->
+			
+		<style>
+			.t-c{text-align:center;}
+			.i-c{width: 150px; height: 35px;background-color: whitesmoke;border-radius: 16px;}
+		</style>
+	</head>
+	
+	<body>
+	
+		<div id="app">
+			<Row :gutter="10" style="margin-top: 10px; margin-left: 10px;">
+				<i-col span="2">
+					<a href="index.html"> <i-button long :size="large" type="default" icon="md-home"></i-button></a>
+				</i-col>
+				<i-col span="2" >
+					 <i-button long :size="large" type="default" icon="md-return-left" @click="returnRoadInfEdit"></i-button>
+				</i-col>
+			</Row>
+
+			<Row :gutter="15" type="flex" justify="center" style="margin-top:30px;">
+				<i-col span="12">
+					<tabs value="drive" @on-click="tabsclick" :model="lonAndLat"> 
+						<tab-pane label="驾车" icon="md-car"  name="drive">
+							<Row :gutter="15" type="flex" justify="start">
+								<i-col span="6"  >
+									<i-input name="startLon" v-model="lonAndLat.startLon" placeholder="输入起点经度(lon)"></i-input>
+								</i-col>
+								<i-col span="6">
+									<i-input name="startLat" v-model="lonAndLat.startLat" placeholder="输入起点纬度(lat)"></i-input>
+								</i-col>
+								<i-col span="6" >
+									<i-input  name="endLon" v-model="lonAndLat.endLon" placeholder="输入终点经度(lon)"></i-input>
+								</i-col>
+								<i-col span="6">
+									<i-input name="endLat" v-model="lonAndLat.endLat" placeholder="输入终点纬度(lat)"></i-input>
+								</i-col>
+							</Row>
+						</tab-pane>
+					</tabs>		
+				</i-col>
+				<i-col span="2">
+					<i-button long :size="large" type="primary" onclick="getDrive()" style="margin-top: 50px;">查看路线</i-button>
+				</i-col>
+				<i-col span="2">
+					<i-button long :size="large" type="primary" @click="submitParameter" style="margin-top: 50px;">提交</i-button>
+				</i-col>
+
+			</Row>
+			<Row :gutter="32" type="flex" justify="center" style="margin-top: 10px;">
+					<i-col span="20"  id="bmapid" style=" height: 700px;" ></i-col>
+					<i-col span="3" >
+						<div id="r-result" style=" height: 700px; overflow-y:scroll;" > </div>
+					</i-col>
+			</Row>
+		</div>
+		
+
+		<script type="text/javascript" src="3dr/jquery-3.4.1.min.js"></script>
+		<script type="text/javascript" src="3dr/vue.min.js"></script>
+		<script type="text/javascript" src="3dr/iview/dist/iview.min.js"></script>
+		<script type="text/javascript" src="js/roadCoordinate.js"></script>
+		<script>
+
+			var map=null,chooseTravel=null,startLon=null,startLat=null,endLon=null,endLat=null,isrun=false;
+			var mapPoint,startPoint=null,endPoint=null;
+			var myIcon1 = null, marker1 = null;
+
+			$(function () {
+				
+				loadBaiduScript();
+					/*
+					$('input[name="startLon"]').bind('input propertychange', function() {
+						createStartMarker();
+					});
+					$('input[name="startLat"]').bind('input propertychange', function() {
+						createStartMarker();
+					});
+					$('input[name="endLon"]').bind('input propertychange', function() {
+						createEndMarker();
+					});
+					$('input[name="endLat"]').bind('input propertychange', function() {
+						createEndMarker();
+					});
+
+				*/
+				
+
+
+			});
+
+			//异步加载百度地图
+			function loadBaiduScript() {  
+				var script = document.createElement("script");  
+					script.type = 'text/javascript'
+					script.src = "http://api.map.baidu.com/api?v=2.0&ak=Fh9X4hT3ygcBMZnlPbRlMG508r0OCqsk&services=true&callback=createBaiduMap";
+					document.getElementsByTagName('head')[0].appendChild(script); 
+			};
+			
+			//创建地图
+			function createBaiduMap(){
+				
+				//在容器中创建地图
+				map = new BMap.Map("bmapid");
+				if(roadCoordinateVm.$data.roadID===undefined){
+					//根据浏览器定位
+					var geolocation = new BMap.Geolocation();
+					geolocation.getCurrentPosition(function(r){
+						if(this.getStatus() == BMAP_STATUS_SUCCESS){
+							map.centerAndZoom(r.point,11);
+							addMapControl();
+						}
+						else {
+							alert('failed'+this.getStatus());
+						}        
+					},{enableHighAccuracy: true})
+				}else{
+					addMapControl();
+					getDrive();
+
+				}
+				
+				//提示框
+				var infowin = new BMap.InfoWindow("<p class='t-c'><input class='i-c' value='选为起点' type='button' onclick='startDeter();' />&nbsp;&nbsp<input class='i-c' value='选为终点' type='button' onclick='endDeter();' /></p>");
+			
+				//点击地图获取数据
+				map.addEventListener("click", function(e){    
+					mapPoint = new BMap.Point(e.point.lng,e.point.lat);
+					map.openInfoWindow(infowin,mapPoint); //开启信息窗口
+				});
+				
+			};
+
+			//添加地图控件
+			function addMapControl(){
+				//启用滚轮放大缩小
+				map.enableScrollWheelZoom(true); 
+				//启用地图惯性拖拽
+				map.enableContinuousZoom(true);
+
+				//添加控件
+				map.addControl(new BMap.NavigationControl());//平移缩放控件   
+				map.addControl(new BMap.ScaleControl());//比例尺 
+				map.addControl(new BMap.OverviewMapControl()); //缩略地图
+			//	map.addControl(new BMap.MapTypeControl()); //地图类型
+
+				// 添加定位控件
+				var opts = {anchor:BMAP_ANCHOR_TOP_RIGHT}
+				var geolocationControl = new BMap.GeolocationControl(opts);
+				geolocationControl.addEventListener("locationSuccess", function(e){
+					// 定位成功事件
+					var address = '';
+					address += e.addressComponent.province;
+					address += e.addressComponent.city;
+					address += e.addressComponent.district;
+					address += e.addressComponent.street;
+					address += e.addressComponent.streetNumber;
+				});
+				geolocationControl.addEventListener("locationError",function(e){
+					// 定位失败事件
+					alert(e.message);
+				});
+				map.addControl(geolocationControl);
+			};
+
+			//驾车出现
+			function driving( map,startLon,startLat,endLon,endLat,startPoint,endPoint){
+				
+				var p1 = new BMap.Point(Number(startLon) ,Number(startLat));
+				var p2 = new BMap.Point(Number(endLon),Number(endLat));
+				var driving = new BMap.DrivingRoute(map, {renderOptions:{map: map, autoViewport: true,panel: "r-result"}});
+				
+				if(startPoint!=null && endPoint!=null){
+					driving.search(startPoint,endPoint);
+				}else{
+					driving.search(p1, p2);
+				}
+				
+			}
+			
+			//获取起点经纬度
+			function startDeter(){
+
+				//清空数据
+				map.clearOverlays();
+				roadCoordinateVm.$data.lonAndLat.endLon="",
+				roadCoordinateVm.$data.lonAndLat.endLat="",
+				endLon=null,endLat=null,
+				myIcon1 = null, marker1 = null;
+
+				startPoint = mapPoint;
+				var myIcon = new BMap.Icon("img/qi.png", new BMap.Size(25,31));
+				var marker = new BMap.Marker(startPoint,{icon:myIcon});
+				map.addOverlay(marker);
+				marker.enableDragging();
+				marker.addEventListener("mouseup",getAttr);
+				function getAttr(){
+					var p = marker.getPosition();       //获取marker的位置
+					startLon = roadCoordinateVm.$data.lonAndLat.startLon=p.lng;
+					startLat = roadCoordinateVm.$data.lonAndLat.startLat=p.lat;
+				};
+				startLon = roadCoordinateVm.$data.lonAndLat.startLon=startPoint.lng;
+				startLat = roadCoordinateVm.$data.lonAndLat.startLat=startPoint.lat;
+			}
+
+			//终点经纬度
+			function endDeter(){
+				if(startPoint==null){alert("请先选择起点！");}
+				else{
+					endPoint = mapPoint;
+
+					if(endPoint!=startPoint){
+					
+						if(myIcon1 != null &&marker1!=null){
+							alert("终点已经创建，您可以移动图标进行定位")
+
+						}else{
+							myIcon1 = new BMap.Icon("img/zhong.png", new BMap.Size(25,31));
+							marker1 = new BMap.Marker(endPoint,{icon:myIcon1});
+							map.addOverlay(marker1);
+							marker1.enableDragging();
+							marker1.addEventListener("mouseup",getAttr);
+
+							function getAttr(){
+								var p = marker1.getPosition();       //获取marker的位置
+								endLon = roadCoordinateVm.$data.lonAndLat.endLon=p.lng;
+								endLat = roadCoordinateVm.$data.lonAndLat.endLat=p.lat;
+							}
+							endLon = roadCoordinateVm.$data.lonAndLat.endLon=endPoint.lng;
+							endLat = roadCoordinateVm.$data.lonAndLat.endLat=endPoint.lat;
+
+						}
+
+					}
+
+				}
+			}
+
+			function getDrive(){
+				startLon = roadCoordinateVm.$data.lonAndLat.startLon;
+				startLat = roadCoordinateVm.$data.lonAndLat.startLat;
+				endLon = roadCoordinateVm.$data.lonAndLat.endLon;
+				endLat = roadCoordinateVm.$data.lonAndLat.endLat;
+				if(startLon!=null && startLat!=null && endLon!=null && endLat!=null && startLon!='' && startLat!='' && endLon!='' && endLat!=''){
+					map.clearOverlays(); 
+					driving( map,startLon,startLat,endLon,endLat,startPoint,endPoint);
+				}else{
+					alert("数据不完整");
+				}
+			}
+
+
+			/*
+			//起点坐标输入框改变是 重新创建 覆盖物
+			function createStartMarker(){
+				map.clearOverlays();
+				roadCoordinateVm.$data.lonAndLat.endLon="",
+				roadCoordinateVm.$data.lonAndLat.endLat="",
+				endLon=null,endLat=null,
+				myIcon1 = null, marker1 = null;
+
+				startLon = roadCoordinateVm.$data.lonAndLat.startLon;
+				startLat = roadCoordinateVm.$data.lonAndLat.startLat;
+				var p1 = new BMap.Point(Number(startLon) ,Number(startLat));
+				var myIcon = new BMap.Icon("img/qi.png", new BMap.Size(25,31));
+				var marker = new BMap.Marker(p1,{icon:myIcon});
+				map.addOverlay(marker);
+				marker.enableDragging();
+				marker.addEventListener("mouseup",getAttr);
+				function getAttr(){
+					var p = marker.getPosition();       //获取marker的位置
+					startLon = roadCoordinateVm.$data.lonAndLat.startLon=p.lng;
+					startLat = roadCoordinateVm.$data.lonAndLat.startLat=p.lat;
+				};
+			}
+
+
+			function createEndMarker(){
+				createStartMarker();
+
+				endLon = roadCoordinateVm.$data.lonAndLat.endLon;
+				endLat = roadCoordinateVm.$data.lonAndLat.endLat;
+				var p2 = new BMap.Point(Number(endLon) ,Number(endLat));
+				myIcon1 = new BMap.Icon("img/zhong.png", new BMap.Size(25,31));
+				marker1 = new BMap.Marker(p2,{icon:myIcon1});
+				map.addOverlay(marker1);
+				marker1.enableDragging();
+				marker1.addEventListener("mouseup",getAttr1);
+
+				function getAttr1(){
+					var p1 = marker1.getPosition();       //获取marker的位置
+					endLon = roadCoordinateVm.$data.lonAndLat.endLon=p1.lng;
+					endLat = roadCoordinateVm.$data.lonAndLat.endLat=p1.lat;
+				}
+
+			}
+			*/
+
+		</script>
+
+	</body>
+</html>

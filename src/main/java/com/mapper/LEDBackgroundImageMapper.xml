@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.LEDBackgroundImageMapper">
+	<insert id="insertLEDBackgroundImage" parameterType="ledBackgroundImage">
+		insert into led_background_image(LED_NO,BACKGROUND_IMAGE,PIXEL_WIDTH,PIXEL_HEIGHT) 
+		values(#{LEDNo},#{backgroundImage},#{pixelWidth},#{pixelHeight})
+	</insert>
+	
+	<select id="selectLEDBackgroundImageById" resultType="ledBackgroundImage">
+		select ID,LED_NO,BACKGROUND_IMAGE,PIXEL_WIDTH,PIXEL_HEIGHT 
+		from led_background_image 
+		where LED_NO = #{value}
+	</select>
+	
+	<update id="updateLEDBackgroundImage" parameterType="ledBackgroundImage">
+		update led_background_image 
+		set BACKGROUND_IMAGE=#{backgroundImage},PIXEL_WIDTH=#{pixelWidth},PIXEL_HEIGHT=#{pixelHeight}
+		where LED_NO=#{LEDNo}
+	</update>
+	
+	<delete id="deleteLEDAllInf">
+	DELETE led_background_image,led_road_inf  
+	FROM led_background_image LEFT 
+	JOIN led_road_inf ON led_background_image.LED_NO = led_road_inf.LED_NO  
+	WHERE led_background_image.LED_NO=#{value}
+	</delete>
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.LEDRoadInfMapper">
+	<insert id="insertLEDRoadInf" parameterType="ledRoadInf">
+		insert into led_road_inf(LED_NO,ROAD_ID,START_LON_GPS,START_LAT_GPS,END_LON_GPS,END_LAT_GPS,TWO_POINT_TIME,TIME_SHOW_X,TIME_SHOW_Y) 
+		values(#{LEDNo},#{roadId},#{startLonGPS},#{startLatGPS},#{endLonGPS},#{endLatGPS},#{twoPointTime},#{timeShowX},#{timeShowY})
+	</insert>
+	
+	<update id="updateLEDRoadInf" parameterType="ledRoadInf">
+	update led_road_inf
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="null != startLonGPS and '' != startLonGPS and null != startLatGPS and '' != startLatGPS and null != endLonGPS and '' != endLonGPS and null != endLatGPS and '' != endLatGPS ">
+				START_LON_GPS=#{startLonGPS},START_LAT_GPS=#{startLatGPS},END_LON_GPS=#{endLonGPS},END_LAT_GPS=#{endLatGPS},
+			</if>
+			<if test="null != twoPointTime and '' != twoPointTime">
+				TWO_POINT_TIME=#{twoPointTime},
+			</if>
+			<if test="null != timeShowX and '' != timeShowX and null != timeShowY and '' != timeShowY">
+				TIME_SHOW_X=#{timeShowX},TIME_SHOW_Y=#{timeShowY},
+			</if>
+		</trim>
+		where LED_NO=#{LEDNo} and ROAD_ID=#{roadId}
+	</update>
+	
+	<select id="selectLEDRoadInfAll" resultType="com.pojo.LEDRoadInf">
+		select ID,LED_NO,ROAD_ID,START_LON_GPS,START_LAT_GPS,END_LON_GPS,END_LAT_GPS,TWO_POINT_TIME,TIME_SHOW_X,TIME_SHOW_Y 
+		from led_road_inf 
+	</select>
+	
+	<select id="selectLEDRoadInfById" resultType="ledRoadInf">
+		select ID, LED_NO,ROAD_ID,START_LON_GPS,START_LAT_GPS,END_LON_GPS,END_LAT_GPS,TWO_POINT_TIME,TIME_SHOW_X,TIME_SHOW_Y from led_road_inf 
+			where LED_NO = #{value}
+	</select>
+	
+	<select id="selectRoadNoNum" resultType="java.lang.Integer">
+		SELECT COUNT(ROAD_ID) FROM led_road_inf WHERE LED_NO=#{value}
+	</select>
+	
+	
+	<delete id="deleteRoadInf" parameterType="ledRoadInf">
+		delete 
+		from led_road_inf
+		where LED_NO=#{LEDNo} and ROAD_ID=#{roadId}
+	</delete>
+		
+	
+</mapper>
